@@ -1,0 +1,7 @@
+支持的操作系统为Windows11，Apache Airflow运行在Windows11主机的WSL2中，不是原生Windows进程。WSL2发行版为Ubuntu24.04，使用Python3.12和Apache Airflow2.10.5。
+
+安装阶段可联网取得Ubuntu、Python和Apache Airflow依赖。业务处理只读取本地输入包，不连接生产元数据库、消息队列、对象存储或业务服务。Apache Airflow按Apache License2.0使用。
+
+权限范围包括WSL2工作目录读取、output目录写入和临时AIRFLOW_HOME。任务不需要生产Airflow账户，也不启动调度器或Web服务。
+
+主要风险是DAG日程与计划不一致、Sensor目标或状态集合写错、execution_delta方向错误，或用输入表抄写清单而没有读取真实DagBag对象。
