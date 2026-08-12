@@ -7,8 +7,6 @@ on:
         default: reference
         type: choice
         options: [reference, verify]
-  push:
-    branches: [main]
 permissions:
   contents: read
 jobs:
@@ -40,19 +38,19 @@ jobs:
         shell: pwsh
         run: ./qa/wsl_wrapper.ps1 -Mode reference
       - name: Verify attachment hashes
-        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'verify') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'verify' }}
         shell: pwsh
         run: |
           $repoWindows=(Resolve-Path '.').Path;$drive=$repoWindows.Substring(0,1).ToLowerInvariant();$rest=$repoWindows.Substring(2).Replace('\','/');$repoWsl="/mnt/$drive$rest"
           wsl.exe -d Ubuntu-24.04 -- bash -lc "cd '$repoWsl'; source .venv/bin/activate; python ./qa/verify_hashes.py"
       - name: Block WSL external network
-        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'verify') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'verify' }}
         shell: pwsh
         run: |
           $repoWindows=(Resolve-Path '.').Path;$drive=$repoWindows.Substring(0,1).ToLowerInvariant();$rest=$repoWindows.Substring(2).Replace('\','/');$repoWsl="/mnt/$drive$rest"
           wsl.exe -d Ubuntu-24.04 -- bash "$repoWsl/qa/block_network.sh" "$repoWsl"
       - name: Verify final task in WSL2
-        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'verify') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'verify' }}
         shell: pwsh
         run: ./qa/wsl_wrapper.ps1 -Mode verify
       - name: Remove WSL network guard

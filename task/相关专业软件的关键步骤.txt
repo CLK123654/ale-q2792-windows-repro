@@ -4,4 +4,4 @@
 4.在feature_snapshot与ranker_release中实例化ExternalTaskSensor，写入目标DAG、目标任务、状态集合、execution_delta和等待参数。
 5.连接各DAG的本地任务边，使用DagBag加载output/dags并检查导入结果。
 6.从DagBag读取DAG、任务和上下游边，从Sensor实例读取跨DAG依赖属性。
-7.结合DAG日程与execution_delta生成发布顺序，导出三份业务清单。
+7.结合DAG日程与execution_delta生成发布顺序，把申请中的窗口、影响范围、等待预算、启用方式、回滚条件和观察指标写入窗口交接。

@@ -1,7 +1,11 @@
-支持的操作系统为Windows11，Apache Airflow运行在Windows11主机的WSL2中，不是原生Windows进程。WSL2发行版为Ubuntu24.04，使用Python3.12和Apache Airflow2.10.5。
+操作系统： Windows11加WSL2。
 
-安装阶段可联网取得Ubuntu、Python和Apache Airflow依赖。业务处理只读取本地输入包，不连接生产元数据库、消息队列、对象存储或业务服务。Apache Airflow按Apache License2.0使用。
+主软件： ApacheAirflow2.10.5，在WSL2的Ubuntu24.04中运行。
 
-权限范围包括WSL2工作目录读取、output目录写入和临时AIRFLOW_HOME。任务不需要生产Airflow账户，也不启动调度器或Web服务。
+代码执行依赖： Python3.12、PowerShell7和ApacheAirflow自带的DagBag、ExternalTaskSensor。文件统一使用UTF-8。
 
-主要风险是DAG日程与计划不一致、Sensor目标或状态集合写错、execution_delta方向错误，或用输入表抄写清单而没有读取真实DagBag对象。
+CPU与GPU： DAG读取、Sensor属性解析和逻辑日期计算只需CPU，不使用GPU。
+
+磁盘： 工作目录需要容纳Airflow环境、输入材料、三份DAG源码和四份发布清单。
+
+超时： Sensor等待时限取自dependency_plan.csv，维护窗口与等待预算取自release_request.json。DAG导入失败或Sensor超时时，值班人按发布申请恢复旧版本。

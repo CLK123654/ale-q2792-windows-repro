@@ -137,8 +137,13 @@ def main() -> None:
             raise ValueError("日程与申请DAG不一致")
         if len(dependencies) != 2 or len({(row["consumer_dag"], row["sensor_task_id"]) for row in dependencies}) != 2:
             raise ValueError("跨DAG依赖缺失或重复")
-        if set(request["report_files"]) != {"dag_inventory.csv", "dependency_inventory.csv", "release_sequence.csv"}:
+        if set(request["report_files"]) != {"dag_inventory.csv", "dependency_inventory.csv", "release_sequence.csv", "release_handoff.csv"}:
             raise ValueError("结果文件申请发生变化")
+        release_fields = ["release_window", "affected_dags", "wait_budget_seconds", "rollout_mode", "rollback_condition", "observation_metrics"]
+        if any(field not in request for field in release_fields) or not isinstance(request["wait_budget_seconds"], int) or request["wait_budget_seconds"] < 1 or not request["observation_metrics"]:
+            raise ValueError("发布安排不完整")
+        if set(request["affected_dags"]) != expected_dags:
+            raise ValueError("发布影响范围与DAG身份不一致")
         for row in schedules:
             if row["timezone"] != "UTC" or int(row["max_active_runs"]) < 1:
                 raise ValueError("日程属性不受支持")
@@ -178,8 +183,12 @@ def main() -> None:
                 "execution_delta_minutes": dep["execution_delta_minutes"],
             })
         write_csv(results_dir / "release_sequence.csv", ["consumer_dag", "sensor_task_id", "consumer_logical_time", "producer_dag", "producer_task_id", "producer_logical_time", "execution_delta_minutes"], sequence)
+        write_csv(results_dir / "release_handoff.csv", ["release_window", "affected_dags", "wait_budget_seconds", "rollout_mode", "rollback_condition", "observation_metrics"], [{
+            "release_window": request["release_window"], "affected_dags": "|".join(request["affected_dags"]), "wait_budget_seconds": request["wait_budget_seconds"],
+            "rollout_mode": request["rollout_mode"], "rollback_condition": request["rollback_condition"], "observation_metrics": "|".join(request["observation_metrics"]),
+        }])
         (output_dir / "README.txt").write_text(
-            "这份日切材料交给特征平台版本负责人。dags目录是待进入版本库的DAG源码，dag_inventory.csv记录任务图，dependency_inventory.csv记录跨DAG等待属性，release_sequence.csv供发布值班定位上游逻辑日期。\n\n现场启用、补跑和历史清理由维护窗值班处理。\n",
+            f"这份日切材料交给特征平台版本负责人。dags目录是待进入版本库的DAG源码，dag_inventory.csv记录任务图，dependency_inventory.csv记录跨DAG等待属性，release_sequence.csv供发布值班定位上游逻辑日期。\n\nrelease_handoff.csv记录变更窗口、影响范围、{request['wait_budget_seconds']}秒等待预算、{request['rollout_mode']}启用方式、回滚条件和观察指标。出现DAG导入错误或Sensor超时时恢复旧版本，补跑和历史清理另行处理。\n",
             encoding="utf-8",
         )
     except Exception:

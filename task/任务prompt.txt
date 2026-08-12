@@ -1,7 +1,7 @@
 特征平台准备接手事件关账、特征快照和排序发布三条日切DAG。现有草稿只有空任务，窗口值班查不到一次发布实际依赖的上游运行。
 
-dag_schedule.csv记录日程与负责人，dependency_plan.csv给出Sensor属性。release_request.json列出任务身份及结果文件，change_request.txt说明接手岗位，starter目录保留当前草稿。
+dag_schedule.csv记录日程与负责人，dependency_plan.csv给出Sensor属性。release_request.json还列出窗口、影响范围、等待预算、启用方式、回滚条件和观察指标，starter目录保留当前草稿。
 
 在Apache Airflow中建立traffic_ingest、feature_snapshot和ranker_release，按日程设置DAG边界，在后两条DAG中配置ExternalTaskSensor，再把本地任务连成从等待到发布的顺序。状态集合和时间偏移都以输入计划为准。
 
-把DAG源码放在output/dags。results中的结构与发布顺序由DagBag和Sensor实例生成，README.txt写明材料去向。版本负责人核对后安排变更，维护窗值班再处理现场启用、补跑和历史清理。
+把DAG源码放在output/dags。results中的结构、发布顺序和窗口交接由DagBag、Sensor实例及申请生成，README.txt写明材料去向。版本负责人据此安排启用，值班人员按申请观察并在触发条件出现时回滚。
