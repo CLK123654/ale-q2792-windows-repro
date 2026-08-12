@@ -1,8 +1,8 @@
 操作系统： Windows11加WSL2。
 
-主软件： ApacheAirflow2.10.5，在WSL2的Ubuntu24.04中运行。
+主软件： Apache Airflow2.10.5，在WSL2的Ubuntu24.04中运行。
 
-代码执行依赖： Python3.12、PowerShell7和ApacheAirflow自带的DagBag、ExternalTaskSensor。文件统一使用UTF-8。
+代码执行依赖： Python3.12、PowerShell7和Apache Airflow自带的DagBag、ExternalTaskSensor。文件统一使用UTF-8。
 
 CPU与GPU： DAG读取、Sensor属性解析和逻辑日期计算只需CPU，不使用GPU。
 
